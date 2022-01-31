@@ -1,0 +1,57 @@
+import socket
+import sys
+#--------------------------------------------------------------
+# Find the IP address of this device
+#--------------------------------------------------------------
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1' #do not return the default first address as it is the loopback address
+    finally:
+        s.close()
+    return IP
+#--------------------------------------------------------------
+# Create a TCP/IP socket
+#--------------------------------------------------------------
+loop1 = True
+# Connect the socket to the port where the server is listening
+while loop1 == True:
+	addressOfServer = input("Enter the Server's IP Address: ")
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+	Service_PortNumber = 10090
+	#-----------------------------------------------------
+	#connect to the server
+	server_address = (addressOfServer, Service_PortNumber)
+	sock.connect(server_address)
+	socketDetails = sock.getsockname()
+	loopControl = True
+	try:
+		# Send data
+		print ("Connecting to the server service  " +\
+			   "using...\n   To   IP: '%s'" % socketDetails[0], "To   TCP Port: '%s'" % Service_PortNumber,
+			   "\n   From IP: '%s'" % get_ip(), "From TCP Port: '%s'" % socketDetails[1],
+			   "\n-----------------------------------------------")
+		message = 'send data'
+		print ('Client has requested the server to "%s"' % message)
+		sock.sendall(message.encode())
+		data = ''
+		#read in values sent
+		while loopControl:
+			data = sock.recv(32).decode()
+			if data != '':
+				receivedData = data
+				if receivedData == 'QQQ':
+					print('---------------------------------\nThe server has requested the connection is closed\n---------------------------------')
+					loopControl = False
+				else:
+					print('received data: "%s"' % receivedData)
+					sock.sendall('send data'.encode())
+	finally:
+		print ('Closing the socket\n---------------------------------')
+		sock.close()
+
+
