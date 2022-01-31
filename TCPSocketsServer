@@ -1,0 +1,54 @@
+
+import socket #The TCP Socket code
+import sys    # Code to get device IP address
+#--------------------------------------------------------------
+# Function - Finding this device's IP address
+#--------------------------------------------------------------
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1' #do not return the default first address as it is the loopback address
+    finally:
+        s.close()
+    return IP
+	
+def reset():
+	sock.close()
+#--------------------------------------------------------------
+# Create a TCP/IP socket
+#--------------------------------------------------------------
+Service_PortNumber = 10090
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create socket
+server_address = ('', Service_PortNumber) # set address and port where '' == this device's IP address
+sock.bind(server_address)
+sock.listen(1) # start listening on the server's port
+#----- This is a blocking point of the IPC ------------------
+loopControl = True
+while True:
+    # Wait for a connection
+    print ('This Keyboard Server at address ' + get_ip() + ' is waiting for a connection on port %s' % Service_PortNumber)
+    connection, client_address = sock.accept()
+    try:
+        print ("----------------------------------------------------------------\n",
+               "Connection received from %s" % client_address[0], "using TCP Port %s"  % client_address[1])
+        # ready to send button press data
+        print('Ready to send data',
+              '\n-------------------------------------------------',
+              '\nEnter qqq to close')
+        while loopControl:
+            keyedIn = input('   Type in your message to the client:>  ')
+            print ('        ...sending ',keyedIn, 'to client')
+            if(keyedIn == 'qqq'):
+                connection.sendall("QQQ".encode())
+                loopControl = False
+            else:
+                connection.sendall(keyedIn.encode())
+    finally:
+        # Wait for next connection
+        loopControl = True
+        print("Closed socket")
+				
