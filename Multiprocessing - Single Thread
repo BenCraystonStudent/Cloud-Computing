@@ -1,0 +1,56 @@
+import multiprocessing
+import os
+import time
+# Process 1
+#Receives common (shared) memory queue
+def calcSquare(sharedProblemsQ, sharedResultsQueue):
+	print("********************************")
+	print("** The calcSquare's Id number is:   " + str(os.getpid()))
+	print("********************************")
+	# Empty the numbersQ to extract the values
+	while sharedProblemsQ.empty() is False:
+		n = sharedProblemsQ.get()
+		sharedResultsQueue.put(n*n)
+		print ("retrieving " + str(n) + " from the sharedProblems queue")
+		time.sleep(1)
+		print ("placing    " + str(n*n)  + " into the sharedResults queue")
+		print("- - - - - - - - - -")
+		time.sleep(1)
+
+def problemSetter():
+	# Process 1
+	print("---------------------------------------------------")
+	print("The 2 processes share a Queue and as you can see below...\n " + \
+		  " they have differing process ids so they cannot directly share a value")
+	print("********************************")
+	print("** The problemSetter's Id number is: " + str(os.getpid()))
+	print("********************************")
+	# Create a FIFO memory queue to receive the results
+	sharedResultsQ = multiprocessing.Queue()
+	# Create a FIFO memory queue to set the values to be squared
+	sharedProblemsQ = multiprocessing.Queue()
+	#set a simple number of problems
+	for i in range(2,6):
+		print ("placing " + str(i) + " into the sharedProblemsQ queue")
+		sharedProblemsQ.put(i)
+		time.sleep(1)
+	# Create process 2 - giving it the 2 queues as its arguments
+	process2 = multiprocessing.Process(target=calcSquare, args=(sharedProblemsQ ,sharedResultsQ))
+	process2.start()
+	process2.join()
+	print("********************************")
+	print("The problemSetter (id: " + str(os.getpid()) + ") now extracts the result from the sharedResultsQ queue")
+	print("********************************")
+	# Check the shared results queue for any entries
+	while sharedResultsQ.empty() is False:
+		time.sleep(1)
+		# Print out the entries of this queue
+		print("Retrieving sharedResultsQ entry " + str(sharedResultsQ.get()))
+		print("---------------------------------------------------")
+
+if __name__ == "__main__":
+	#Create the first process that will place data in the problem queue
+	# and read the results placed in the results queue by process 2
+	process1 = multiprocessing.Process(target=problemSetter, args=())
+	process1.start()
+	process1.join()
