@@ -1,0 +1,50 @@
+import socket
+import sys
+#--------------------------------------------------------------
+# Find the IP address of this device
+#--------------------------------------------------------------
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1' #do not return the default first address as it is the loopback address
+    finally:
+        s.close()
+    return IP
+#--------------------------------------------------------------
+# Create a TCP/IP socket
+#--------------------------------------------------------------
+addressOfServer = input("Enter the Server's IP Address: ")
+###addressOfServer = raw_input("Enter the Server's IP Address: ")###
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+Service_PortNumber = 10080
+#-----------------------------------------------------
+#connect to the server
+""" How to connect to the Server's service - needs IP and TCP addresses """
+server_address = (addressOfServer, Service_PortNumber)
+sock.connect(server_address)
+#-----------------------------------------------------
+# Complete the 4 lines of script below
+#-----------------------------------------------------
+# Get a number from the keyboard using 'input' 
+#-----------------------------------------------------
+numberToBeSquared = input("Please enter a number to be squared")
+#-----------------------------------------------------
+# use sendall to send the encoded number
+#-----------------------------------------------------
+sock.sendall(numberToBeSquared.encode())
+#-----------------------------------------------------
+# Get the reply using sock.recv(32).decode()
+#-----------------------------------------------------
+receivedNumber = sock.recv(32).decode()
+#-----------------------------------------------------
+# Print the reply
+#-----------------------------------------------------
+print(receivedNumber)
+
+
+
+
