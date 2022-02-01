@@ -1,0 +1,49 @@
+import socket #The TCP Socket code
+import sys    # Code to get device IP address
+#--------------------------------------------------------------
+# Function - Finding this device's IP address
+#--------------------------------------------------------------
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1' #do not return the default first address as it is the loopback address
+    finally:
+        s.close()
+    return IP
+	
+def reset():
+	sock.close()
+#--------------------------------------------------------------
+# Create a TCP/IP socket
+#--------------------------------------------------------------
+print("Starting file")
+Service_PortNumber = 10080
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create socket
+server_address = ('', Service_PortNumber) # set address and port where '' == this device's IP address
+sock.bind(server_address)
+sock.listen(1) # start listening on the server's port
+#----- This is a blocking point of the IPC -----------
+print( get_ip())
+#-----------------------------------------------------
+# create a connection and client_address link
+#-----------------------------------------------------
+print("Waiting for a connection")
+connection, client_address = sock.accept()
+print("Connection received")
+#-----------------------------------------------------
+# use the connection to receive and decode the data
+#-----------------------------------------------------
+##number = sock.recv(32).decode()
+number = int(connection.recv(32).decode())
+#-----------------------------------------------------
+# Square the value
+#-----------------------------------------------------
+squaredNumber = str(number * number)
+#-----------------------------------------------------
+# Reply the square using sendall...
+#-----------------------------------------------------
+connection.sendall(squaredNumber.encode())
